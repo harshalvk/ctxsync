@@ -17,16 +17,14 @@ accurate, without manual upkeep.
 
 ## Development
 
-Requires [Bun](https://bun.sh) >= 1.1.
-
-\`\`\`bash
+```bash
 bun install         # install dependencies
 bun run dev          # run the CLI locally
 bun test             # run tests
 bun run lint          # lint with Biome
 bun run typecheck    # type-check with tsc
 bun run build         # bundle for distribution
-\`\`\`
+```
 
 ## License
 
