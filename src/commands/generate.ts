@@ -1,5 +1,6 @@
 import { defineCommand } from "citty";
 import { loadConfig } from "../config/load.ts";
+import { generateContextFile } from "../core/engine.ts";
 
 export const generateCommand = defineCommand({
   meta: {
@@ -20,17 +21,25 @@ export const generateCommand = defineCommand({
   },
   async run({ args }) {
     const config = await loadConfig();
-    const outputPath = args.output ?? config.output;
+    if (args.output) config.output = args.output;
 
-    console.log(`[ctxsync] Target file: ${outputPath}`);
-    console.log(`[ctxsync] Scanning:    ${config.include.join(", ")}`);
-    console.log(`[ctxsync] Ignoring:    ${config.exclude.join(", ")}`);
+    console.log(`[ctxsync] Scanning repo (target: ${config.output})...`);
 
-    if (args["dry-run"]) {
-      console.log("[ctxsync] Dry run — no file will be written.");
+    try {
+      const result = await generateContextFile(config, {
+        write: !args["dry-run"],
+      });
+      console.log(`[ctxsync] Scanned ${result.filesScanned} files.`);
+
+      if (args["dry-run"]) {
+        console.log("\n--- Generated content (dry run, not written) ---\n");
+        console.log(result.content);
+      } else {
+        console.log(`[ctxsync] Wrote ${config.output}`);
+      }
+    } catch (error) {
+      console.error(`[ctxsync] Generation failed: ${(error as Error).message}`);
+      process.exit(1);
     }
-
-    // Repo scanning + Claude summarization lands in Phase 3.
-    console.log("[ctxsync] Generation engine not implemented yet (Phase 3).");
   },
 });
