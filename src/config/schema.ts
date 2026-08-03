@@ -1,3 +1,9 @@
+import type { AnthropicModel } from "../core/providers/anthropic";
+import type { OpenAICompatibleModel } from "../core/providers/openai-compatible";
+import type { ProviderConfig } from "../core/providers/registry";
+
+type KnownModel = AnthropicModel | OpenAICompatibleModel;
+
 export interface CtxsyncConfig {
   /** Path to the context file to generate/maintain, relative to repo root. */
   output: string;
@@ -6,7 +12,8 @@ export interface CtxsyncConfig {
   /** Glob patterns for files/dirs to exclude when scanning the repo. */
   exclude: string[];
   /** Anthropic model id used for summarization. */
-  model: string;
+  model: KnownModel;
+  provider: ProviderConfig;
 }
 
 export const defaultConfig: CtxsyncConfig = {
@@ -14,6 +21,7 @@ export const defaultConfig: CtxsyncConfig = {
   include: ["**/*"],
   exclude: ["node_modules/**", "dist/**", ".git/**", "*.lock"],
   model: "claude-sonnet-4-6",
+  provider: { type: "anthropic" },
 };
 
 /**
