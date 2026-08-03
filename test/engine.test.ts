@@ -4,18 +4,24 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { defaultConfig } from "../src/config/schema.ts";
 import { generateContextFile } from "../src/core/engine.ts";
+import type { LLMProvider } from "../src/core/providers/types.ts";
+
+function fakeProvider(response: string): LLMProvider {
+  return {
+    id: "fake",
+    generateText: async () => response,
+  };
+}
 
 describe("generateContextFile", () => {
-  test("scans, generates via the injected fn, and writes the output file", async () => {
+  test("scans, generates via the injected provider, and writes the output file", async () => {
     const dir = await mkdtemp(join(tmpdir(), "ctxsync-engine-"));
     try {
       await writeFile(join(dir, "index.ts"), "export const hello = 'world';");
 
-      const fakeGenerate = async () => "# Fake AGENTS.md content";
-
       const result = await generateContextFile(
         { ...defaultConfig, include: ["**/*.ts"] },
-        { cwd: dir, generateFn: fakeGenerate },
+        { cwd: dir, provider: fakeProvider("# Fake AGENTS.md content") },
       );
 
       expect(result.filesScanned).toBe(1);
@@ -33,11 +39,9 @@ describe("generateContextFile", () => {
     try {
       await writeFile(join(dir, "index.ts"), "export const hello = 'world';");
 
-      const fakeGenerate = async () => "# Dry run content";
-
       await generateContextFile(
         { ...defaultConfig, include: ["**/*.ts"] },
-        { cwd: dir, generateFn: fakeGenerate, write: false },
+        { cwd: dir, provider: fakeProvider("# Dry run content"), write: false },
       );
 
       const file = Bun.file(join(dir, defaultConfig.output));
