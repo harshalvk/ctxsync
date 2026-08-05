@@ -8,13 +8,13 @@ export interface WatchOptions {
    * every time generate writes its own output
    */
   ignoreGlobs: string[];
-  debounceMe?: number;
+  debounceMs?: number;
   onChange: () => void | Promise<void>;
 }
 
 /** returns a stop function */
 export function watchRepo(options: WatchOptions): () => void {
-  const { cwd, ignoreGlobs, debounceMe = 500, onChange } = options;
+  const { cwd, ignoreGlobs, debounceMs = 500, onChange } = options;
   const ignoreMatchers = ignoreGlobs.map((pattern) => new Bun.Glob(pattern));
   let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -27,7 +27,7 @@ export function watchRepo(options: WatchOptions): () => void {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       void onChange();
-    }, debounceMe);
+    }, debounceMs);
   });
 
   return () => {
