@@ -1,17 +1,36 @@
 {
   "name": "ctxsync",
   "version": "0.1.0",
-  "module": "index.ts",
   "description": "Keeps AI agent context files (AGENTS.md, CLAUDE.md, .cursorrules) in sync with your codebase, automatically.",
   "type": "module",
   "license": "MIT",
+  "author": "Your Name",
+  "homepage": "https://github.com/your-username/ctxsync#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/ctxsync.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/ctxsync/issues"
+  },
+  "keywords": ["cli", "ai", "agents", "context", "claude", "llm", "codegen", "bun", "agents.md"],
   "bin": {
     "ctxsync": "./dist/cli.js"
+  },
+  "exports": {
+    "./config": {
+      "types": "./dist/types/config/schema.d.ts",
+      "default": "./dist/schema.js"
+    }
   },
   "files": ["dist"],
   "scripts": {
     "dev": "bun run src/cli.ts",
-    "build": "bun build ./src/cli.ts --outdir ./dist --target bun --minify",
+    "build": "bun run build:cli && bun run build:config && bun run build:types",
+    "build:cli": "bun build ./src/cli.ts --outdir ./dist --target bun --minify",
+    "build:config": "bun build ./src/config/schema.ts --outdir ./dist --target bun --minify",
+    "build:types": "tsc --project tsconfig.build.json",
+    "build:binaries": "bun run scripts/build-binaries.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -20,18 +39,5 @@
     "test:watch": "bun test --watch",
     "prepublishOnly": "bun run build",
     "prepare": "lefthook install"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@types/bun": "latest",
-    "lefthook": "^2.1.10",
-    "typescript": "^5.7.2"
-  },
-  "dependencies": {
-    "citty": "^0.1.6"
-  },
-  "engines": {
-    "bun": ">=1.1.0"
-  },
-  "trustedDependencies": ["@biomejs/biome", "lefthook"]
+  }
 }
