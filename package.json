@@ -4,14 +4,14 @@
   "description": "Keeps AI agent context files (AGENTS.md, CLAUDE.md, .cursorrules) in sync with your codebase, automatically.",
   "type": "module",
   "license": "MIT",
-  "author": "Your Name",
-  "homepage": "https://github.com/your-username/ctxsync#readme",
+  "author": "Harshal V Khobragade",
+  "homepage": "https://github.com/harshalvk/ctxsync#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/ctxsync.git"
+    "url": "git+https://github.com/harshalvk/ctxsync.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/ctxsync/issues"
+    "url": "https://github.com/harshalvk/ctxsync/issues"
   },
   "keywords": ["cli", "ai", "agents", "context", "claude", "llm", "codegen", "bun", "agents.md"],
   "bin": {
