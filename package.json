@@ -1,5 +1,5 @@
 {
-  "name": "ctxsync",
+  "name": "@harshalvk/ctxsync",
   "version": "0.1.0",
   "description": "Keeps AI agent context files (AGENTS.md, CLAUDE.md, .cursorrules) in sync with your codebase, automatically.",
   "type": "module",
