@@ -1,8 +1,6 @@
 # ctxsync
 
-> Keeps AI agent context files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`) in sync with your codebase — automatically.
-
-**Status:** early development. Not yet published.
+Keeps AI agent context files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`) in sync with your codebase — automatically.
 
 ## Install
 
