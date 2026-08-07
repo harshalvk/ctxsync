@@ -1,11 +1,15 @@
 import { describe, expect, test } from "bun:test";
-import { createAnthropicProvider } from "../../src/core/providers/anthropic";
+import { createAnthropicProvider } from "../../src/core/providers/anthropic.ts";
 
 describe("createAnthropicProvider", () => {
-  test("throws a clear error when no api key is available", async () => {
+  test("throws a clear error when no API key is available", async () => {
     const provider = createAnthropicProvider();
     const originalKey = process.env.ANTHROPIC_API_KEY;
-    process.env.ANTHROPIC_API_KEY = undefined;
+    // On some platforms (confirmed on Windows), assigning undefined coerces
+    // to the string "undefined" instead of unsetting the var, which silently
+    // breaks this test's whole premise — delete is correct here.
+    // biome-ignore lint/performance/noDelete: see comment above
+    delete process.env.ANTHROPIC_API_KEY;
 
     try {
       await expect(
@@ -18,7 +22,7 @@ describe("createAnthropicProvider", () => {
     }
   });
 
-  test("respects a custom apiKeyEnv name is its error message", async () => {
+  test("respects a custom apiKeyEnv name in its error message", async () => {
     const provider = createAnthropicProvider({ apiKeyEnv: "MY_CUSTOM_KEY" });
 
     await expect(provider.generateText({ model: "claude-sonnet-5", prompt: "hi" })).rejects.toThrow(

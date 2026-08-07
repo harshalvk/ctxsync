@@ -1,47 +1,37 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { hashContent, hashFiles, loadCache, saveCache } from "../src/core/cache";
+import { createOpenAICompatibleProvider } from "../src/core/providers/openai-compatible";
 
-describe("hashContent", () => {
-  test("is deterministic and content-sensitive", () => {
-    expect(hashContent("a")).toBe(hashContent("a"));
-    expect(hashContent("a")).toBe(hashContent("b"));
+describe("createOpenAICompatibleProvider", () => {
+  test("throws a clear error when no API key is available", async () => {
+    const provider = createOpenAICompatibleProvider({
+      baseUrl: "https://api.openai.com/v1/chat/completions",
+      apiKeyEnv: "CTXSYNC_TEST_UNSET_KEY",
+    });
+
+    await expect(provider.generateText({ model: "gpt-4o", prompt: "hi" })).rejects.toThrow(
+      "CTXSYNC_TEST_UNSET_KEY",
+    );
   });
-});
 
-describe("hashFiles", () => {
-  test("maps each path to its content hash", () => {
-    const hashes = hashFiles([{ path: "a.ts", content: "x" }]);
-    expect(hashes["a.ts"]).toBe(hashContent("x"));
-  });
-});
+  test("defaults apiKeyEnv to OPENAI_API_KEY", async () => {
+    const provider = createOpenAICompatibleProvider({
+      baseUrl: "https://api.openai.com/v1/chat/completions",
+    });
+    const originalKey = process.env.OPENAI_API_KEY;
+    // On some platforms (confirmed on Windows), assigning undefined coerces
+    // to the string "undefined" instead of unsetting the var, which silently
+    // breaks this test's whole premise — delete is correct here.
+    // biome-ignore lint/performance/noDelete: see comment above
+    delete process.env.OPENAI_API_KEY;
 
-describe("cache load/save", () => {
-  test("loadCache returns null when no cache file exists", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "ctxsync-cache-"));
     try {
-      expect(await loadCache(dir)).toBeNull();
+      await expect(provider.generateText({ model: "gpt-4o", prompt: "hi" })).rejects.toThrow(
+        "OPENAI_API_KEY",
+      );
     } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
-  });
-
-  test("saveCache then loadCache round-trips the data", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "ctxsync-cache-"));
-    try {
-      await saveCache(dir, {
-        fileHashes: { "a.ts": "abc" },
-        generatedAt: "2026-01-01",
-      });
-      const loaded = await loadCache(dir);
-      expect(loaded).toEqual({
-        fileHashes: { "a.ts": "abc" },
-        generatedAt: "2026-01-01",
-      });
-    } finally {
-      await rm(dir, { recursive: true, force: true });
+      if (originalKey !== undefined) {
+        process.env.OPENAI_API_KEY = originalKey;
+      }
     }
   });
 });

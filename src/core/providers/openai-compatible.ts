@@ -18,7 +18,7 @@ export interface OpenAICompatibleProviderOptions {
    * - Ollama: http://localhost:11434/v1/chat/completions
    */
   baseUrl: string;
-  apiKeyEvn?: string;
+  apiKeyEnv?: string;
   /** extra headers some providers require (e.g. openrouter's http-referer) */
   headers?: Record<string, string>;
 }
@@ -34,7 +34,7 @@ interface OpenAIResponse {
 export function createOpenAICompatibleProvider(
   options: OpenAICompatibleProviderOptions,
 ): LLMProvider {
-  const apiKeyEnv = options.apiKeyEvn ?? "OPENAI_API_KEY";
+  const apiKeyEnv = options.apiKeyEnv ?? "OPENAI_API_KEY";
 
   return {
     id: "openai-compatible",
