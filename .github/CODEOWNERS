@@ -1,0 +1,21 @@
+# These owners are automatically requested for review when a PR touches
+
+# matching paths. Later rules override earlier ones for the same path.
+
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo
+
+- @harshalvk
+
+# Release and CI infrastructure: changes here affect publishing, secrets,
+
+# and what gets pushed to npm/GitHub Releases, so they always warrant a
+
+# careful look regardless of who else touches the rest of the codebase.
+
+/.github/workflows/ @harshalvk
+/.changeset/ @harshalvk
+/package.json @harshalvk
+/bun.lock @harshalvk
+/.npmrc @harshalvk
