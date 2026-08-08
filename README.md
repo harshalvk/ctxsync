@@ -1,4 +1,5 @@
 # ctxsync
+[![npm version](https://img.shields.io/npm/v/@harshalvk/ctxsync)](https://www.npmjs.com/package/@harshalvk/ctxsync)
 
 Keeps AI agent context files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`) in sync with your codebase — automatically.
 
