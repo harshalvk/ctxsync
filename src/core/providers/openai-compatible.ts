@@ -28,7 +28,7 @@ interface OpenAIChoice {
 }
 
 interface OpenAIResponse {
-  chocies: OpenAIChoice[];
+  choices: OpenAIChoice[];
 }
 
 export function createOpenAICompatibleProvider(
@@ -67,7 +67,7 @@ export function createOpenAICompatibleProvider(
       }
 
       const data = (await res.json()) as OpenAIResponse;
-      const text = data.chocies[0]?.message?.content?.trim();
+      const text = data.choices[0]?.message?.content?.trim();
 
       if (!text) {
         throw new Error("openai-compatible api returned no text content");
