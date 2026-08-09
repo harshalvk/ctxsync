@@ -1,6 +1,6 @@
 {
   "name": "@harshalvk/ctxsync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Keeps AI agent context files (AGENTS.md, CLAUDE.md, .cursorrules) in sync with your codebase, automatically.",
   "type": "module",
   "license": "MIT",
@@ -13,7 +13,17 @@
   "bugs": {
     "url": "https://github.com/harshalvk/ctxsync/issues"
   },
-  "keywords": ["cli", "ai", "agents", "context", "claude", "llm", "codegen", "bun", "agents.md"],
+  "keywords": [
+    "cli",
+    "ai",
+    "agents",
+    "context",
+    "claude",
+    "llm",
+    "codegen",
+    "bun",
+    "agents.md"
+  ],
   "bin": {
     "ctxsync": "./dist/cli.js"
   },
@@ -23,7 +33,9 @@
       "default": "./dist/schema.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "bun run src/cli.ts",
     "build": "bun run build:cli && bun run build:config && bun run build:types",
@@ -56,5 +68,8 @@
   "engines": {
     "bun": ">=1.1.0"
   },
-  "trustedDependencies": ["@biomejs/biome", "lefthook"]
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "lefthook"
+  ]
 }
