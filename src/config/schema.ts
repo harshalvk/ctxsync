@@ -1,3 +1,4 @@
+import { DEFAULT_MAX_PROMPT_CHARS } from "../core/prompts";
 import type { AnthropicModel } from "../core/providers/anthropic";
 import type { OpenAICompatibleModel } from "../core/providers/openai-compatible";
 import type { ProviderConfig } from "../core/providers/registry";
@@ -14,6 +15,12 @@ export interface CtxsyncConfig {
   /** Anthropic model id used for summarization. */
   model: KnownModel;
   provider: ProviderConfig;
+  maxPromptChars: number;
+  /**
+   * Merge .gitignore patterns into exclude automatically. default true
+   * trun off if you actually want gitignored files included in the scan
+   */
+  respectGitignore: true;
 }
 
 export const defaultConfig: CtxsyncConfig = {
@@ -22,6 +29,8 @@ export const defaultConfig: CtxsyncConfig = {
   exclude: ["node_modules/**", "dist/**", ".git/**", "*.lock"],
   model: "claude-sonnet-4-6",
   provider: { type: "anthropic" },
+  maxPromptChars: DEFAULT_MAX_PROMPT_CHARS,
+  respectGitignore: true,
 };
 
 /**
