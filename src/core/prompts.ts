@@ -1,19 +1,61 @@
-import type { FileDiff } from "./diff";
-import type { ScannedFile } from "./scanner";
+import type { FileDiff } from "./diff.ts";
+import { prioritizeFiles } from "./prioritize.ts";
+import type { ScannedFile } from "./scanner.ts";
 
-// conservative char budget for the file contents portion of the prompt
-const MAX_TOTAL_CHARS = 60_000;
+// Default conservative char budget for the file contents portion of the prompt.
+// Real token-aware budgeting is a future improvement; this keeps v1 simple and
+// safe. Callers can override it (see CtxsyncConfig.maxPromptChars) — some
+// providers/tiers (e.g. Groq's free tier: 12k tokens/min) need it much smaller
+// than what's fine for Claude/GPT-class rate limits.
+export const DEFAULT_MAX_PROMPT_CHARS = 60_000;
 
-export function buildContextPrompt(files: ScannedFile[]): string {
+// No single file is allowed to eat more than this much of the budget. Without
+// this, one large generated/vendored file that slipped past excludes could
+// consume the entire prompt, crowding out everything else. Truncating to
+// head+tail keeps some signal instead of dropping the file entirely.
+const MAX_CHARS_PER_FILE = 8_000;
+
+function truncateFileContent(content: string): string {
+  if (content.length <= MAX_CHARS_PER_FILE) return content;
+
+  const headChars = Math.floor(MAX_CHARS_PER_FILE * 0.7);
+  const tailChars = MAX_CHARS_PER_FILE - headChars;
+  const omittedChars = content.length - MAX_CHARS_PER_FILE;
+
+  const head = content.slice(0, headChars);
+  const tail = content.slice(content.length - tailChars);
+
+  return `${head}\n\n... [${omittedChars} chars truncated] ...\n\n${tail}`;
+}
+
+/**
+ * Prioritizes files (manifests/README/entry points first), truncates any
+ * individual file that would otherwise dominate the budget, then greedily
+ * fills the remaining budget in priority order. Continues past files that
+ * don't fit (rather than stopping at the first miss) so a later, smaller,
+ * lower-priority file still gets included if there's room for it.
+ */
+function selectFilesWithinBudget(files: ScannedFile[], maxChars: number): ScannedFile[] {
+  const prioritized = prioritizeFiles(files);
   const included: ScannedFile[] = [];
   let totalChars = 0;
 
-  for (const file of files) {
-    if (totalChars + file.content.length > MAX_TOTAL_CHARS) continue;
-    included.push(file);
-    totalChars += file.content.length;
+  for (const file of prioritized) {
+    const content = truncateFileContent(file.content);
+    if (totalChars + content.length > maxChars) continue;
+
+    included.push({ ...file, content });
+    totalChars += content.length;
   }
 
+  return included;
+}
+
+export function buildContextPrompt(
+  files: ScannedFile[],
+  maxChars: number = DEFAULT_MAX_PROMPT_CHARS,
+): string {
+  const included = selectFilesWithinBudget(files, maxChars);
   const fileBlocks = included.map((file) => `--- ${file.path} ---\n${file.content}`).join("\n\n");
 
   return [
@@ -34,21 +76,23 @@ export function buildContextPrompt(files: ScannedFile[]): string {
 export interface UpdatePromptInput {
   existingContent: string;
   diff: FileDiff;
-  /** content for the added + changed files only (not the whole repo) */
+  /** Content for the added + changed files only (not the whole repo). */
   changedFiles: ScannedFile[];
 }
 
 /**
- * builds a prompt that asks the model to update an existing AGENTS.md in light
- * of a diff, instead of regenerating the whole thing from scratch.
- * much cheaper and faster once a repo has any real size
+ * Builds a prompt that asks the model to update an existing AGENTS.md in light
+ * of a diff, instead of regenerating the whole thing from scratch. Much cheaper
+ * and faster once a repo has any real size.
  */
-export function buildUpdatePrompt(input: UpdatePromptInput): string {
+export function buildUpdatePrompt(
+  input: UpdatePromptInput,
+  maxChars: number = DEFAULT_MAX_PROMPT_CHARS,
+): string {
   const { existingContent, diff, changedFiles } = input;
 
-  const fileBlocks = changedFiles
-    .map((file) => `--- ${file.path} ---\n${file.content}`)
-    .join("\n\n");
+  const included = selectFilesWithinBudget(changedFiles, maxChars);
+  const fileBlocks = included.map((file) => `--- ${file.path} ---\n${file.content}`).join("\n\n");
 
   const lines = [
     "You maintain an AGENTS.md file: a concise reference document that helps AI coding",
