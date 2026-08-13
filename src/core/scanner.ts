@@ -1,5 +1,6 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
+import { loadGitignorePatterns } from "./gitignore";
 
 export interface ScannedFile {
   /** Path relative to the repo root */
@@ -13,6 +14,8 @@ export interface ScanOptions {
   exclude: string[];
   /** files larget than this are skipped (default 200kb) */
   maxFileBytes?: number;
+  /** merge .gitignore patterns into exclude. default true */
+  respectGitignore?: boolean;
 }
 
 const BINARY_EXTENSIONS = new Set([
@@ -47,8 +50,9 @@ function isBinaryPath(path: string): boolean {
  * `exclude`. returns file paths (relative to `cwd`) along with their content
  */
 export async function scanRepo(options: ScanOptions): Promise<ScannedFile[]> {
-  const { cwd, include, exclude, maxFileBytes = 200_000 } = options;
-  const excludeGlobs = exclude.map((pattern) => new Bun.Glob(pattern));
+  const { cwd, include, exclude, maxFileBytes = 200_000, respectGitignore } = options;
+  const gitignorePatterns = respectGitignore ? await loadGitignorePatterns(cwd) : [];
+  const excludeGlobs = [...exclude, ...gitignorePatterns].map((pattern) => new Bun.Glob(pattern));
   const seen = new Set<string>();
   const files: ScannedFile[] = [];
 
