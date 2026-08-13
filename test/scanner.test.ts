@@ -45,4 +45,45 @@ describe("scanRepo", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("respects .gitignore by default, merging it with explicit exclude", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ctxsync-scanner-"));
+    try {
+      await writeFile(join(dir, ".gitignore"), "*.log\n");
+      await writeFile(join(dir, "app.log"), "log noise");
+      await writeFile(join(dir, "index.ts"), "export const a = 1;");
+
+      const files = await scanRepo({
+        cwd: dir,
+        include: ["**/*"],
+        exclude: [],
+      });
+      const paths = files.map((f) => f.path);
+
+      expect(paths).toContain("index.ts");
+      expect(paths).not.toContain("app.log");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("skips .gitignore entirely when respectGitignore is false", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ctxsync-scanner-"));
+    try {
+      await writeFile(join(dir, ".gitignore"), "*.log\n");
+      await writeFile(join(dir, "app.log"), "log noise");
+
+      const files = await scanRepo({
+        cwd: dir,
+        include: ["**/*"],
+        exclude: [],
+        respectGitignore: false,
+      });
+      const paths = files.map((f) => f.path);
+
+      expect(paths).toContain("app.log");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });
