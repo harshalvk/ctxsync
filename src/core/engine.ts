@@ -41,6 +41,7 @@ export async function generateContextFile(
     cwd,
     include: config.include,
     exclude: config.exclude,
+    respectGitignore: config.respectGitignore,
   });
   const currentHashes = hashFiles(files);
 
