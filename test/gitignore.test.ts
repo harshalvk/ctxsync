@@ -19,7 +19,7 @@ describe("loadGitignorePatterns", () => {
     try {
       await writeFile(join(dir, ".gitignore"), "# comment\n\n*.log\n");
       const patterns = await loadGitignorePatterns(dir);
-      expect(patterns).toEqual(["**/*.log"]);
+      expect(patterns).toEqual(["*.log", "**/*.log"]);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -30,7 +30,7 @@ describe("loadGitignorePatterns", () => {
     try {
       await writeFile(join(dir, ".gitignore"), "*.log\n!important.log\n");
       const patterns = await loadGitignorePatterns(dir);
-      expect(patterns).toEqual(["**/*.log"]);
+      expect(patterns).toEqual(["*.log", "**/*.log"]);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

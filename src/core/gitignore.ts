@@ -35,7 +35,7 @@ export async function loadGitignorePatterns(cwd: string): Promise<string[]> {
       // No slash: git matches this at any depth. "**/" matches root-level
       // files too (confirmed: Bun.Glob's ** matches zero or more dirs),
       // so one pattern covers both cases
-      patterns.push(`**/${pattern}`);
+      patterns.push(pattern, `**/${pattern}`);
     } else {
       patterns.push(pattern.replace(/^\//, ""));
     }
