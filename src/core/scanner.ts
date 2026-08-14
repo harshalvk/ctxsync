@@ -50,7 +50,7 @@ function isBinaryPath(path: string): boolean {
  * `exclude`. returns file paths (relative to `cwd`) along with their content
  */
 export async function scanRepo(options: ScanOptions): Promise<ScannedFile[]> {
-  const { cwd, include, exclude, maxFileBytes = 200_000, respectGitignore } = options;
+  const { cwd, include, exclude, maxFileBytes = 200_000, respectGitignore = true } = options;
   const gitignorePatterns = respectGitignore ? await loadGitignorePatterns(cwd) : [];
   const excludeGlobs = [...exclude, ...gitignorePatterns].map((pattern) => new Bun.Glob(pattern));
   const seen = new Set<string>();
