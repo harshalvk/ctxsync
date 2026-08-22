@@ -35,7 +35,7 @@ function truncateFileContent(content: string): string {
  * don't fit (rather than stopping at the first miss) so a later, smaller,
  * lower-priority file still gets included if there's room for it.
  */
-function selectFilesWithinBudget(files: ScannedFile[], maxChars: number): ScannedFile[] {
+export function selectFilesWithinBudget(files: ScannedFile[], maxChars: number): ScannedFile[] {
   const prioritized = prioritizeFiles(files);
   const included: ScannedFile[] = [];
   let totalChars = 0;
