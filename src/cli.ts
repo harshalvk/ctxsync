@@ -2,6 +2,7 @@
 import { defineCommand, runMain } from "citty";
 import { version } from "../package.json" with { type: "json" };
 import { checkCommand } from "./commands/check.ts";
+import { estimateCommand } from "./commands/estimate.ts";
 import { generateCommand } from "./commands/generate.ts";
 
 const main = defineCommand({
@@ -13,6 +14,7 @@ const main = defineCommand({
   subCommands: {
     generate: generateCommand,
     check: checkCommand,
+    estimate: estimateCommand,
   },
 });
 
