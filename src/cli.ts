@@ -1,12 +1,13 @@
 #!/usr/bin/env bun
 import { defineCommand, runMain } from "citty";
+import { version } from "../package.json" with { type: "json" };
 import { checkCommand } from "./commands/check.ts";
 import { generateCommand } from "./commands/generate.ts";
 
 const main = defineCommand({
   meta: {
     name: "ctxsync",
-    version: "0.1.0",
+    version,
     description: "Keep AI agent context files in sync with your codebase.",
   },
   subCommands: {
