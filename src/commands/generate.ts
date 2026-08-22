@@ -1,5 +1,6 @@
 import { defineCommand } from "citty";
 import { loadConfig } from "../config/load.ts";
+import { color } from "../core/colors.ts";
 import { generateContextFile } from "../core/engine.ts";
 import { watchRepo } from "../core/watch.ts";
 
@@ -32,32 +33,40 @@ export const generateCommand = defineCommand({
   },
   async run({ args }) {
     const config = await loadConfig();
-    if (typeof args.output === "string" && args.output) {
-      config.output = args.output;
-    }
+    if (args.output) config.output = args.output;
 
     async function runOnce(): Promise<void> {
-      console.log(`[ctxsync] Scanning repo (target: ${config.output})...`);
+      console.log(color.dim(`[ctxsync] Scanning repo (target: ${config.output})...`));
+      const start = performance.now();
 
       try {
         const result = await generateContextFile(config, {
           write: !args["dry-run"],
-          force: args.force === true,
+          force: args.force,
         });
-        console.log(`[ctxsync] Scanned ${result.filesScanned} files. Mode: ${result.mode}`);
+        const elapsedMs = Math.round(performance.now() - start);
+
+        console.log(
+          color.dim(
+            `[ctxsync] Scanned ${result.filesScanned} files in ${elapsedMs}ms. Mode: ${result.mode}`,
+          ),
+        );
 
         if (result.mode === "skipped") {
-          console.log("[ctxsync] No changes detected since the last run - nothing to update.");
+          console.log(
+            color.dim("[ctxsync] No changes detected since the last run — nothing to update."),
+          );
+          return;
         }
 
         if (args["dry-run"]) {
-          console.log("\n--- Generated content (dry run, not written) ---\n");
+          console.log(color.dim("\n--- Generated content (dry run, not written) ---\n"));
           console.log(result.content);
         } else {
-          console.log(`[ctxsync] Wrote ${config.output}`);
+          console.log(color.green(`✓ Wrote ${config.output}`));
         }
       } catch (error) {
-        console.error(`[ctxsync] Generation failed: ${(error as Error).message}`);
+        console.error(color.red(`✗ Generation failed: ${(error as Error).message}`));
         if (!args.watch) process.exit(1);
       }
     }
@@ -65,7 +74,7 @@ export const generateCommand = defineCommand({
     await runOnce();
 
     if (args.watch) {
-      console.log("[ctxsync] watching for changes... (ctrl+c to stop)");
+      console.log(color.cyan("[ctxsync] Watching for changes... (Ctrl+C to stop)"));
 
       const stop = watchRepo({
         cwd: process.cwd(),
@@ -75,7 +84,7 @@ export const generateCommand = defineCommand({
 
       process.on("SIGINT", () => {
         stop();
-        console.log("\n[ctxsync] stopped watching.");
+        console.log(color.dim("\n[ctxsync] Stopped watching."));
         process.exit(0);
       });
 
