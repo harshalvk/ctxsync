@@ -1,11 +1,12 @@
 import { defineCommand } from "citty";
 import { loadConfig } from "../config/load.ts";
+import { color } from "../core/colors.ts";
 import { checkContextFile } from "../core/status.ts";
 
 export const checkCommand = defineCommand({
   meta: {
     name: "check",
-    description: "Check whether the context file exists (CI-friendly, exits non-zero on failure).",
+    description: "Check whether the context file exists and is up to date (CI-friendly).",
   },
   async run() {
     const config = await loadConfig();
@@ -13,23 +14,30 @@ export const checkCommand = defineCommand({
 
     switch (result.status) {
       case "missing":
-        console.error(`[ctxsync] ${config.output} does not exist. run "ctxsync generate`);
+        console.error(color.red(`✗ ${config.output} does not exist. Run "ctxsync generate".`));
         process.exit(1);
         break;
+
       case "no-cache":
         console.error(
-          `[ctxsync] ${config.output} exists but wasn't produced by ctxsync (or its cache was deleted) - cannot verify freshness. run "ctxsync generate`,
+          color.red(
+            `✗ ${config.output} exists but wasn't produced by ctxsync (or its cache was deleted) — cannot verify freshness. Run "ctxsync generate".`,
+          ),
         );
         process.exit(1);
         break;
+
       case "stale":
         console.error(
-          `[ctxsync] ${config.output} is stale - ${result.changedCount} file(s) since the last generate. run "ctxsync generate"`,
+          color.red(
+            `✗ ${config.output} is stale — ${result.changedCount} file(s) changed since the last generate. Run "ctxsync generate".`,
+          ),
         );
         process.exit(1);
         break;
+
       case "up-to-date":
-        console.log(`[ctxsync] ${config.output} is up to date`);
+        console.log(color.green(`✓ ${config.output} is up to date.`));
         break;
     }
   },
